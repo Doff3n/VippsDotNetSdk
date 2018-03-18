@@ -16,12 +16,12 @@ namespace VippsDotNetSdk
         public static class UrlPaths
         {
             public static string Token    => "accessToken/get";
-            public static string Initiate => "Ecomm/v1/payments";
-            public static string Capture  => "Ecomm/v1/payments/{0}/capture";
-            public static string Cancel   => "Ecomm/v1/payments/{0}/cancel";
-            public static string Refund   => "Ecomm/v1/payments/{0}/refund";
-            public static string Details  => "Ecomm/v1/payments/{0}/serialNumber/{1}/details";
-            public static string Status   => "Ecomm/v1/payments/{0}/serialNumber/{1}/status";
+            public static string Initiate => "ecomm/v2/payments";
+            public static string Capture  => "ecomm/v2/payments/{0}/capture";
+            public static string Cancel   => "ecomm/v2/payments/{0}/cancel";
+            public static string Refund   => "ecomm/v2/payments/{0}/refund";
+            public static string Details  => "ecomm/v2/payments/{0}/details";
+            public static string Status   => "ecomm/v2/payments/{0}/status";
         }
     }
 }

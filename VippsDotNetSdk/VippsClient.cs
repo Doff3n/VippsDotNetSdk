@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,6 +25,7 @@ namespace VippsDotNetSdk
         private readonly string _ecommerceSubscriptionKey;
         private readonly string _orderUrl;
         private readonly string _merchantSerialNumber;
+        private readonly bool   _isApp;
         private readonly Token  _token;
 
         /// <summary>
@@ -37,9 +37,14 @@ namespace VippsDotNetSdk
         /// <param name="ecommerceSubscriptionKey">The ecommerce subscription key.</param>
         /// <param name="orderUrl">The order URL.</param>
         /// <param name="merchantSerialNumber">The merchant serial number.</param>
-        public VippsClient(string clientId, string                 clientSecret, string accessSubscriptionKey,
-            string                ecommerceSubscriptionKey, string orderUrl,
-            string                merchantSerialNumber)
+        public VippsClient(
+            string clientId,
+            string clientSecret,
+            string accessSubscriptionKey,
+            string ecommerceSubscriptionKey,
+            string orderUrl,
+            string merchantSerialNumber,
+            bool   isApp = false)
         {
             _clientId                 = clientId;
             _clientSecret             = clientSecret;
@@ -48,33 +53,43 @@ namespace VippsDotNetSdk
             _merchantSerialNumber     = merchantSerialNumber;
             _ecommerceSubscriptionKey = ecommerceSubscriptionKey;
             _token                    = GetToken();
+            _isApp                    = isApp;
         }
-        
-        public Initiate Initiate(string orderId, string mobilNumber, int amount, string description,
-            string                      callbackUrl,
-            string                      refOrderId = "")
+
+        public Initiate Initiate(string orderId,
+            string                      mobilNumber,
+            int                         amount,
+            string                      description,
+            string                      callbackPrefix,
+            string                      fallBack)
         {
             RestRequest request =
-                CreateInitiateRequest(orderId, mobilNumber, amount, description, callbackUrl, refOrderId);
+                CreateInitiateRequest(orderId, mobilNumber, amount, description, callbackPrefix, fallBack);
             return Execute<Initiate>(request);
         }
 
-        public Task<Initiate> InitiateAsync(string orderId, string mobilNumber, int amount, string description,
-            string                                 callbackUrl,
-            string                                 refOrderId = "")
+        public Task<Initiate> InitiateAsync(string orderId,
+            string                                 mobilNumber,
+            int                                    amount,
+            string                                 description,
+            string                                 callbackPrefix,
+            string                                 fallBack)
         {
             RestRequest request =
-                CreateInitiateRequest(orderId, mobilNumber, amount, description, callbackUrl, refOrderId);
+                CreateInitiateRequest(orderId, mobilNumber, amount, description, callbackPrefix, fallBack);
             return ExecuteAsync<Initiate>(request);
         }
 
-        private RestRequest CreateInitiateRequest(string orderId, string mobilNumber, int amount,
+        private RestRequest CreateInitiateRequest(string orderId,
+            string                                       mobilNumber,
+            int                                          amount,
             string                                       description,
-            string                                       callbackUrl, string refOrderId)
+            string                                       callbackUrl,
+            string                                       fallback)
         {
             var request = MakeBaseRestRequest(Constants.UrlPaths.Initiate, Method.POST);
 
-            var paymentRequest = MakeBaseRequest<Model.Payment.Request.Initiate>(callbackUrl);
+            var paymentRequest = MakeBaseRequest<Model.Payment.Request.Initiate>(fallback, callbackUrl);
 
             paymentRequest.CustomerInfo              = new CustomerInfo();
             paymentRequest.CustomerInfo.MobileNumber = mobilNumber;
@@ -83,11 +98,73 @@ namespace VippsDotNetSdk
             transaction.TransactionText = description;
             transaction.Amount          = amount;
             transaction.OrderId         = orderId;
-            transaction.TimeStamp       = DateTime.Now;
-            if (!string.IsNullOrEmpty(refOrderId))
+
+            paymentRequest.Transaction = transaction;
+
+            request.AddBody(paymentRequest);
+            return request;
+        }
+
+        public Initiate InitiateExpress(string orderId,
+            int                                amount,
+            string                             description,
+            string                             callbackPrefix,
+            string                             fallBack,
+            string                             shippingDetailsPrefix,
+            string                             consentRemovalPrefix,
+            string                             phoneNumber = "",
+            string                             authToken   = "")
+        {
+            RestRequest request =
+                CreateInitiateExpressRequest(orderId, amount,               description, callbackPrefix, fallBack,
+                    shippingDetailsPrefix,            consentRemovalPrefix, phoneNumber, authToken);
+            return Execute<Initiate>(request);
+        }
+
+        public Task<Initiate> InitiateExpressAsync(string orderId,
+            int                                           amount,
+            string                                        description,
+            string                                        callbackPrefix,
+            string                                        fallBack,
+            string                                        shippingDetailsPrefix,
+            string                                        consentRemovalPrefix,
+            string                                        mobileNumber,
+            string                                        authToken = "")
+        {
+            RestRequest request =
+                CreateInitiateExpressRequest(orderId, amount,               description,  callbackPrefix, fallBack,
+                    shippingDetailsPrefix,            consentRemovalPrefix, mobileNumber, authToken);
+            return ExecuteAsync<Initiate>(request);
+        }
+
+        private RestRequest CreateInitiateExpressRequest(string orderId,
+            int                                                 amount,
+            string                                              description,
+            string                                              callbackPrefix,
+            string                                              fallBack,
+            string                                              shippingDetailsPrefix,
+            string                                              consentRemovalPrefix,
+            string                                              mobileNumber,
+            string                                              authToken = "")
+        {
+            var request = MakeBaseRestRequest(Constants.UrlPaths.Initiate, Method.POST);
+
+            var paymentRequest =
+                MakeBaseRequest<Model.Payment.Request.Initiate>(fallBack, callbackPrefix, true);
+            paymentRequest.MerchantInfo.ShippingDetailsPrefix = shippingDetailsPrefix;
+            paymentRequest.MerchantInfo.ConsentRemovalPrefix  = consentRemovalPrefix;
+            paymentRequest.MerchantInfo.AuthToken             = authToken;
+
+            paymentRequest.CustomerInfo = new CustomerInfo();
+            if (!string.IsNullOrEmpty(mobileNumber))
             {
-                transaction.RefOrderId = refOrderId;
+                paymentRequest.CustomerInfo.MobileNumber = mobileNumber;
             }
+
+            var transaction             = new Transaction();
+            transaction.TransactionText = description;
+            transaction.Amount          = amount;
+            transaction.OrderId         = orderId;
 
             paymentRequest.Transaction = transaction;
 
@@ -188,7 +265,7 @@ namespace VippsDotNetSdk
         public Details GetDetails(string orderId)
         {
             RestRequest request =
-                MakeBaseRestRequest(string.Format(Constants.UrlPaths.Details, orderId, _merchantSerialNumber),
+                MakeBaseRestRequest(string.Format(Constants.UrlPaths.Details, orderId),
                     Method.GET);
 
             return Execute<Details>(request);
@@ -197,7 +274,7 @@ namespace VippsDotNetSdk
         public Task<Details> GetDetailsAsync(string orderId)
         {
             RestRequest request =
-                MakeBaseRestRequest(string.Format(Constants.UrlPaths.Details, orderId, _merchantSerialNumber),
+                MakeBaseRestRequest(string.Format(Constants.UrlPaths.Details, orderId),
                     Method.GET);
 
             return ExecuteAsync<Details>(request);
@@ -206,7 +283,7 @@ namespace VippsDotNetSdk
         public OrderStatus GetOrderStatus(string orderId)
         {
             RestRequest request =
-                MakeBaseRestRequest(string.Format(Constants.UrlPaths.Status, orderId, _merchantSerialNumber),
+                MakeBaseRestRequest(string.Format(Constants.UrlPaths.Status, orderId),
                     Method.GET);
 
             return Execute<OrderStatus>(request);
@@ -215,7 +292,7 @@ namespace VippsDotNetSdk
         public Task<OrderStatus> GetOrderStatusAsync(string orderId)
         {
             RestRequest request =
-                MakeBaseRestRequest(string.Format(Constants.UrlPaths.Status, orderId, _merchantSerialNumber),
+                MakeBaseRestRequest(string.Format(Constants.UrlPaths.Status, orderId),
                     Method.GET);
 
             return ExecuteAsync<OrderStatus>(request);
@@ -274,20 +351,28 @@ namespace VippsDotNetSdk
             throw new VippsPaymentException(errorResponse);
         }
 
-        private T MakeBaseRequest<T>(string callback = "") where T : BaseRequest, new()
+        private T MakeBaseRequest<T>(string fallback = "", string callbackPrefix = "", bool express = false)
+            where T : BaseRequest, new()
         {
             T baseRequest                                 = new T();
             baseRequest.MerchantInfo                      = new MerchantInfo();
             baseRequest.MerchantInfo.MerchantSerialNumber = _merchantSerialNumber;
+            baseRequest.MerchantInfo.IsApp                = _isApp;
+            baseRequest.MerchantInfo.PaymentType          = express ? "eComm Regular Payment" : "eComm Express Payment";
 
-            if (!string.IsNullOrEmpty(callback))
+            if (!string.IsNullOrEmpty(fallback))
             {
-                baseRequest.MerchantInfo.CallBack = callback;
+                baseRequest.MerchantInfo.Fallback = fallback;
+            }
+
+            if (!string.IsNullOrEmpty(callbackPrefix))
+            {
+                baseRequest.MerchantInfo.CallbackPrefix = callbackPrefix;
             }
 
             return baseRequest;
         }
-        
+
         private RestRequest MakeBaseRestRequest(string path, Method method)
         {
             RestRequest request = new RestRequest(path, method);

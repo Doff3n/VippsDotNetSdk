@@ -19,16 +19,80 @@ namespace VippsDotNetSdk
         /// <param name="mobilNumber">Mobile number of the user to receive payment request</param>
         /// <param name="amount">Amount in øre</param>
         /// <param name="description">Transaction text displayed to end user in app</param>
-        /// <param name="callbackUrl">Vipps will use this URL to post callback</param>
-        /// <param name="refOrderId">Identifies if the payment references to some past orders registered with Vipps. If defined, transactions for this payment will show up as child transactions of the specified order</param>
+        /// <param name="callbackPrefix">This is to receive the callback after the payment request.
+        /// Domain name and context path should be provided by merchant as the value for this parameter.
+        /// The rest of  the URL will be appended by Vipps according to Vipps guidelines</param>
+        /// <param name="fallBack">Vipps will use the fall back URL to redirect Merchant Page once Payment is completed in Vipps System</param>
+        /// <param name="refOrderId">Identifies if the payment references to 
+        /// some paste orders registered with Vipps. If defined, transactions for this payment will
+        /// show up as child transactions of the specified order.</param>
         /// <returns><see cref="VippsDotNetSdk.Model.Payment.Response.Initiate"/></returns>
-        Initiate Initiate(string orderId, string mobilNumber, int amount, string description, string callbackUrl,
-            string               refOrderId = "");
+        Initiate Initiate(
+            string orderId,
+            string mobilNumber,
+            int    amount,
+            string description,
+            string callbackPrefix,
+            string fallBack,
+            string refOrderId = "");
 
         /// <inheritdoc cref="Initiate"/>
-        Task<Initiate> InitiateAsync(string orderId, string mobilNumber, int amount, string description,
-            string                          callbackUrl,
-            string                          refOrderId = "");
+        Task<Initiate> InitiateAsync(
+            string orderId,
+            string mobilNumber,
+            int    amount,
+            string description,
+            string callbackPrefix,
+            string fallBack,
+            string refOrderId = "");
+
+        /// <summary>
+        /// Initiate payment is used to create a payment order in Vipps. 
+        /// In order to identify sales channel payments are coming from merchantSerialNumber is used to distinguish between them. 
+        /// Merchant provided orderId must be unique per sales channel. 
+        /// Please note that single payment is uniquely identified by composite of merchantSerialNumber and orderId
+        /// </summary>
+        /// <param name="orderId">OrderId uniquely identifies a payment.</param>
+        /// <param name="mobilNumber">Mobile number of the user to receive payment request</param>
+        /// <param name="amount">Amount in øre</param>
+        /// <param name="description">Transaction text displayed to end user in app</param>
+        /// <param name="callbackPrefix">This is to receive the callback after the payment request.
+        /// Domain name and context path should be provided by merchant as the value for this parameter.
+        /// The rest of  the URL will be appended by Vipps according to Vipps guidelines</param>
+        /// <param name="fallBack">Vipps will use the fall back URL to redirect Merchant Page once Payment is completed in Vipps System</param>
+        /// <param name="shippingDetailsPrefix">In case of express checkout payment, merchant should pass this prefix to let Vipps fetch shipping cost and method related details</param>
+        /// <param name="consentRemovalPrefix"></param>
+        /// <param name="refOrderId">Identifies if the payment references to 
+        /// some paste orders registered with Vipps. If defined, transactions for this payment will
+        /// show up as child transactions of the specified order.</param>
+        /// <param name="authToken">Merchant should share this token if merchant has authentication mechanism in place which could be used for making callbacks secure</param>
+        /// <returns><see cref="VippsDotNetSdk.Model.Payment.Response.Initiate"/></returns>
+        Initiate InitiateExpress(
+            string orderId,
+            int    amount,
+            string description,
+            string callbackPrefix,
+            string fallBack,
+            string shippingDetailsPrefix,
+            string consentRemovalPrefix,
+            string refOrderId  = "",
+            string mobilNumber = "",
+            string authToken   = ""
+        );
+
+        /// <inheritdoc cref="Initiate"/>
+        Task<Initiate> InitiateExpressAsync(
+            string orderId,
+            int    amount,
+            string description,
+            string callbackPrefix,
+            string fallBack,
+            string shippingDetailsPrefix,
+            string consentRemovalPrefix,
+            string refOrderId  = "",
+            string mobilNumber = "",
+            string authToken   = ""
+        );
 
         /// <summary>
         /// The API call allows merchant to capture the reserved amount. 

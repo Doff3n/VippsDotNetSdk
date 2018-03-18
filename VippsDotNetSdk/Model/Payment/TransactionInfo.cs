@@ -11,8 +11,8 @@ namespace VippsDotNetSdk.Model.Payment
         [JsonConverter(typeof(StringEnumConverter))]
         public Status Status { get; set; }
 
-        public string   TransactionId { get; set; }
-        public DateTime TimeStamp     { get; set; }
-        public string   Message       { get; set; }
+        public string   TransactionText { get; set; }
+        public string   TransactionId   { get; set; }
+        public DateTime TimeStamp       { get; set; }
     }
 }

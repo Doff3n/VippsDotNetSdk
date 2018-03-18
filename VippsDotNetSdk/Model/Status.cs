@@ -12,6 +12,7 @@
         Autocancel,
         Failed,
         Rejected,
-        Captured
+        Captured,
+        Refund
     }
 }

@@ -2,7 +2,9 @@
 {
     public class Initiate : BaseResponse
     {
-        public string          MerchantSerianNumber { get; set; }
-        public TransactionInfo TransactionInfo      { get; set; }
+        /// <summary>
+        /// URL to redirect to after a Initiate is successfull
+        /// </summary>
+        public string Url { get; set; }
     }
 }

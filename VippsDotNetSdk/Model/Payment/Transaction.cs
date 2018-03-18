@@ -8,16 +8,16 @@ namespace VippsDotNetSdk.Model.Payment
         [JsonProperty(PropertyName = "orderId")]
         public string OrderId { get; set; }
 
-        [JsonProperty(PropertyName = "refOrderId", NullValueHandling = NullValueHandling.Ignore)]
-        public string RefOrderId { get; set; }
-
         [JsonProperty(PropertyName = "amount")]
         public int Amount { get; set; }
 
         [JsonProperty(PropertyName = "transactionText")]
         public string TransactionText { get; set; }
 
-        [JsonProperty(PropertyName = "timeStamp")]
+        [JsonProperty("timeStamp")]
         public DateTime TimeStamp { get; set; }
+
+        [JsonProperty("refOrderId")]
+        public string RefOrderId { get; set; }
     }
 }
