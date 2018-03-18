@@ -61,7 +61,8 @@ namespace VippsDotNetSdk
             int                         amount,
             string                      description,
             string                      callbackPrefix,
-            string                      fallBack)
+            string                      fallBack,
+            string                      refOrderId = "")
         {
             RestRequest request =
                 CreateInitiateRequest(orderId, mobilNumber, amount, description, callbackPrefix, fallBack);
@@ -73,7 +74,8 @@ namespace VippsDotNetSdk
             int                                    amount,
             string                                 description,
             string                                 callbackPrefix,
-            string                                 fallBack)
+            string                                 fallBack,
+            string                                 refOrderId = "")
         {
             RestRequest request =
                 CreateInitiateRequest(orderId, mobilNumber, amount, description, callbackPrefix, fallBack);
@@ -85,7 +87,8 @@ namespace VippsDotNetSdk
             int                                          amount,
             string                                       description,
             string                                       callbackUrl,
-            string                                       fallback)
+            string                                       fallback,
+            string                                       refOrderId = "")
         {
             var request = MakeBaseRestRequest(Constants.UrlPaths.Initiate, Method.POST);
 
@@ -98,6 +101,10 @@ namespace VippsDotNetSdk
             transaction.TransactionText = description;
             transaction.Amount          = amount;
             transaction.OrderId         = orderId;
+            if (!string.IsNullOrEmpty(refOrderId))
+            {
+                transaction.RefOrderId = refOrderId;
+            }
 
             paymentRequest.Transaction = transaction;
 
@@ -112,12 +119,13 @@ namespace VippsDotNetSdk
             string                             fallBack,
             string                             shippingDetailsPrefix,
             string                             consentRemovalPrefix,
-            string                             phoneNumber = "",
+            string                             refOrderId  = "",
+            string                             mobilNumber = "",
             string                             authToken   = "")
         {
             RestRequest request =
                 CreateInitiateExpressRequest(orderId, amount,               description, callbackPrefix, fallBack,
-                    shippingDetailsPrefix,            consentRemovalPrefix, phoneNumber, authToken);
+                    shippingDetailsPrefix,            consentRemovalPrefix, refOrderId,  mobilNumber,    authToken);
             return Execute<Initiate>(request);
         }
 
@@ -128,12 +136,13 @@ namespace VippsDotNetSdk
             string                                        fallBack,
             string                                        shippingDetailsPrefix,
             string                                        consentRemovalPrefix,
-            string                                        mobileNumber,
-            string                                        authToken = "")
+            string                                        refOrderId  = "",
+            string                                        mobilNumber = "",
+            string                                        authToken   = "")
         {
             RestRequest request =
-                CreateInitiateExpressRequest(orderId, amount,               description,  callbackPrefix, fallBack,
-                    shippingDetailsPrefix,            consentRemovalPrefix, mobileNumber, authToken);
+                CreateInitiateExpressRequest(orderId, amount,               description, callbackPrefix, fallBack,
+                    shippingDetailsPrefix,            consentRemovalPrefix, refOrderId,  mobilNumber,    authToken);
             return ExecuteAsync<Initiate>(request);
         }
 
@@ -144,8 +153,9 @@ namespace VippsDotNetSdk
             string                                              fallBack,
             string                                              shippingDetailsPrefix,
             string                                              consentRemovalPrefix,
-            string                                              mobileNumber,
-            string                                              authToken = "")
+            string                                              refOrderId   = "",
+            string                                              mobileNumber = "",
+            string                                              authToken    = "")
         {
             var request = MakeBaseRestRequest(Constants.UrlPaths.Initiate, Method.POST);
 
@@ -165,6 +175,11 @@ namespace VippsDotNetSdk
             transaction.TransactionText = description;
             transaction.Amount          = amount;
             transaction.OrderId         = orderId;
+
+            if (!string.IsNullOrEmpty(refOrderId))
+            {
+                transaction.RefOrderId = refOrderId;
+            }
 
             paymentRequest.Transaction = transaction;
 
