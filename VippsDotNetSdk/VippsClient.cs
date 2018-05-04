@@ -373,7 +373,7 @@ namespace VippsDotNetSdk
             baseRequest.MerchantInfo                      = new MerchantInfo();
             baseRequest.MerchantInfo.MerchantSerialNumber = _merchantSerialNumber;
             baseRequest.MerchantInfo.IsApp                = _isApp;
-            baseRequest.MerchantInfo.PaymentType          = express ? "eComm Regular Payment" : "eComm Express Payment";
+            baseRequest.MerchantInfo.PaymentType          = express ? "eComm Express Payment" : "eComm Regular Payment";
 
             if (!string.IsNullOrEmpty(fallback))
             {
